@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="112" fill="#0A0A0A"/>
+  <path d="M136 352c56-8 88-36 96-84 8-52 34-88 80-108 18-8 38 8 32 27-19 62-52 113-101 152-28 22-61 35-99 39-17 2-25-23-8-26Z" fill="#C9A96E"/>
+  <path d="M282 122c29-17 70-3 89 30 17 30 10 68-16 84-4 2-9 1-11-4l-67-102c-2-3 1-6 5-8Z" fill="#EDEAE4"/>
+  <text x="256" y="428" text-anchor="middle" font-family="Arial, sans-serif" font-size="70" font-weight="700" fill="#C9A96E">GV</text>
+</svg>
