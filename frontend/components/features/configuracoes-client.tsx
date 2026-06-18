@@ -22,7 +22,8 @@ import type { CategoriaDespesa, Profile } from "@/lib/types";
 import { normalizePhone } from "@/lib/utils";
 
 type ProfileForm = z.infer<typeof profileSchema>;
-type CategoryForm = z.infer<typeof categoriaSchema>;
+type CategoryFormInput = z.input<typeof categoriaSchema>;
+type CategoryFormOutput = z.output<typeof categoriaSchema>;
 
 export function ConfiguracoesClient() {
   const router = useRouter();
@@ -34,7 +35,7 @@ export function ConfiguracoesClient() {
   const [editingCategory, setEditingCategory] = useState<CategoriaDespesa | null>(null);
   const [categoryToToggle, setCategoryToToggle] = useState<CategoriaDespesa | null>(null);
   const profileForm = useForm<ProfileForm>({ resolver: zodResolver(profileSchema) });
-  const categoryForm = useForm<CategoryForm>({ resolver: zodResolver(categoriaSchema), defaultValues: { ativo: true } });
+  const categoryForm = useForm<CategoryFormInput, unknown, CategoryFormOutput>({ resolver: zodResolver(categoriaSchema), defaultValues: { ativo: true } });
   const logoPreview = profileForm.watch("logo_url");
 
   async function load() {
@@ -109,7 +110,7 @@ export function ConfiguracoesClient() {
     setCategoryOpen(true);
   }
 
-  async function saveCategory(values: CategoryForm) {
+  async function saveCategory(values: CategoryFormOutput) {
     const result = editingCategory
       ? await supabase.from("categorias_despesas").update(values).eq("id", editingCategory.id)
       : await supabase.from("categorias_despesas").insert(values);

@@ -20,7 +20,8 @@ import { createClient } from "@/lib/supabase/client";
 import type { Atendimento, Servico } from "@/lib/types";
 import { money } from "@/lib/utils";
 
-type FormData = z.infer<typeof servicoSchema>;
+type ServicoFormInput = z.input<typeof servicoSchema>;
+type ServicoFormOutput = z.output<typeof servicoSchema>;
 
 export function ServicosClient() {
   const supabase = createClient();
@@ -28,7 +29,7 @@ export function ServicosClient() {
   const [atendimentos, setAtendimentos] = useState<Atendimento[]>([]);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Servico | null>(null);
-  const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<FormData>({ resolver: zodResolver(servicoSchema), defaultValues: { ativo: true } });
+  const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<ServicoFormInput, unknown, ServicoFormOutput>({ resolver: zodResolver(servicoSchema), defaultValues: { ativo: true } });
 
   async function load() {
     const [services, appointments] = await Promise.all([supabase.from("servicos").select("*").order("nome"), supabase.from("atendimentos").select("*")]);
@@ -50,7 +51,7 @@ export function ServicosClient() {
     setOpen(true);
   }
 
-  async function onSubmit(values: FormData) {
+  async function onSubmit(values: ServicoFormOutput) {
     const payload = { ...values, tempo_estimado_minutos: values.tempo_estimado_minutos === "" ? null : Number(values.tempo_estimado_minutos), descricao: values.descricao || null };
     const result = editing ? await supabase.from("servicos").update(payload).eq("id", editing.id) : await supabase.from("servicos").insert(payload);
     if (result.error) return toast.error(result.error.code === "23505" ? "Servico ja cadastrado" : "Nao foi possivel salvar");

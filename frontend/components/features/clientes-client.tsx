@@ -23,7 +23,8 @@ import type { Atendimento, Cliente } from "@/lib/types";
 import { money, normalizePhone, whatsappUrl } from "@/lib/utils";
 import { clientStats } from "./data-utils";
 
-type FormData = z.infer<typeof clienteSchema>;
+type ClienteFormInput = z.input<typeof clienteSchema>;
+type ClienteFormOutput = z.output<typeof clienteSchema>;
 type ClienteStats = Cliente & { total_gasto: number; total_atendimentos: number; ultimo_atendimento: string | null };
 
 export function ClientesClient() {
@@ -34,7 +35,7 @@ export function ClientesClient() {
   const [editing, setEditing] = useState<Cliente | null>(null);
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("ativas");
-  const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<FormData>({ resolver: zodResolver(clienteSchema), defaultValues: { ativo: true } });
+  const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<ClienteFormInput, unknown, ClienteFormOutput>({ resolver: zodResolver(clienteSchema), defaultValues: { ativo: true } });
 
   async function load() {
     const [clients, appointments] = await Promise.all([
@@ -69,7 +70,7 @@ export function ClientesClient() {
     setOpen(true);
   }
 
-  async function onSubmit(values: FormData) {
+  async function onSubmit(values: ClienteFormOutput) {
     const payload = {
       ...values,
       whatsapp: normalizePhone(values.whatsapp),

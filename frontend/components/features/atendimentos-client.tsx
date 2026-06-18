@@ -23,7 +23,8 @@ import type { Atendimento, Cliente, Servico } from "@/lib/types";
 import { minutesBetween, money } from "@/lib/utils";
 import { paymentMethods, periodRange } from "./data-utils";
 
-type FormData = z.infer<typeof atendimentoSchema>;
+type AtendimentoFormInput = z.input<typeof atendimentoSchema>;
+type AtendimentoFormOutput = z.output<typeof atendimentoSchema>;
 
 export function AtendimentosClient({ initialClienteId }: { initialClienteId?: string }) {
   const supabase = createClient();
@@ -36,7 +37,7 @@ export function AtendimentosClient({ initialClienteId }: { initialClienteId?: st
   const [clienteFilter, setClienteFilter] = useState(initialClienteId ?? "");
   const [servicoFilter, setServicoFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("todos");
-  const { register, handleSubmit, reset, watch, setValue, formState: { errors, isSubmitting } } = useForm<FormData>({ resolver: zodResolver(atendimentoSchema), defaultValues: { status: "realizado", cliente_id: initialClienteId ?? "" } });
+  const { register, handleSubmit, reset, watch, setValue, formState: { errors, isSubmitting } } = useForm<AtendimentoFormInput, unknown, AtendimentoFormOutput>({ resolver: zodResolver(atendimentoSchema), defaultValues: { status: "realizado", cliente_id: initialClienteId ?? "" } });
 
   const selectedService = watch("servico_id");
   const start = watch("hora_inicio");
@@ -73,11 +74,31 @@ export function AtendimentosClient({ initialClienteId }: { initialClienteId?: st
 
   function openForm(item?: Atendimento) {
     setEditing(item ?? null);
-    reset(item ? { ...item, valor_cobrado: Number(item.valor_cobrado) } : { cliente_id: initialClienteId ?? "", servico_id: "", data: format(new Date(), "yyyy-MM-dd"), hora_inicio: "", hora_fim: "", valor_cobrado: 0, forma_pagamento: "PIX", observacoes: "", status: "realizado" });
+    reset(item ? {
+      cliente_id: item.cliente_id,
+      servico_id: item.servico_id,
+      data: item.data,
+      hora_inicio: item.hora_inicio,
+      hora_fim: item.hora_fim,
+      valor_cobrado: Number(item.valor_cobrado),
+      forma_pagamento: item.forma_pagamento,
+      observacoes: item.observacoes ?? "",
+      status: item.status
+    } : {
+      cliente_id: initialClienteId ?? "",
+      servico_id: "",
+      data: format(new Date(), "yyyy-MM-dd"),
+      hora_inicio: "",
+      hora_fim: "",
+      valor_cobrado: 0,
+      forma_pagamento: "PIX",
+      observacoes: "",
+      status: "realizado"
+    });
     setOpen(true);
   }
 
-  async function onSubmit(values: FormData) {
+  async function onSubmit(values: AtendimentoFormOutput) {
     const payload = { ...values, duracao_minutos: minutesBetween(values.hora_inicio, values.hora_fim), observacoes: values.observacoes || null };
     const result = editing ? await supabase.from("atendimentos").update(payload).eq("id", editing.id) : await supabase.from("atendimentos").insert(payload);
     if (result.error) return toast.error("Nao foi possivel salvar");

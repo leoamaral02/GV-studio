@@ -23,7 +23,8 @@ import type { CategoriaDespesa, Despesa } from "@/lib/types";
 import { money } from "@/lib/utils";
 import { periodRange } from "./data-utils";
 
-type FormData = z.infer<typeof despesaSchema>;
+type DespesaFormInput = z.input<typeof despesaSchema>;
+type DespesaFormOutput = z.output<typeof despesaSchema>;
 
 export function DespesasClient() {
   const supabase = createClient();
@@ -34,7 +35,7 @@ export function DespesasClient() {
   const [period, setPeriod] = useState("mes-atual");
   const [category, setCategory] = useState("");
   const [status, setStatus] = useState("todas");
-  const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<FormData>({ resolver: zodResolver(despesaSchema), defaultValues: { status: "ativa" } });
+  const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<DespesaFormInput, unknown, DespesaFormOutput>({ resolver: zodResolver(despesaSchema), defaultValues: { status: "ativa" } });
 
   async function load() {
     const range = periodRange(period);
@@ -57,7 +58,7 @@ export function DespesasClient() {
     setOpen(true);
   }
 
-  async function onSubmit(values: FormData) {
+  async function onSubmit(values: DespesaFormOutput) {
     const payload = { ...values, observacao: values.observacao || null };
     const result = editing ? await supabase.from("despesas").update(payload).eq("id", editing.id) : await supabase.from("despesas").insert(payload);
     if (result.error) return toast.error("Nao foi possivel salvar");
